@@ -1,0 +1,181 @@
+{
+	// Customized Loss function
+	"Loss function creation": {
+		"scope": "python",
+		"prefix": "funcloss",
+		"body": [
+			"def ${1:my_loss}(${2:args}):",
+			"    def ${3:wrapper_function}(y_true, y_pred):\n",
+			"        #YOUR CODE HERE\n",
+			"        return \n",
+			"    return ${3:wrapper_function}"
+
+		],
+		"description": "Loss fuction using wrapper function"
+	},
+	"Loss class creation": {
+		"scope": "python",
+		"prefix": "classloss",
+		"body": [
+			"from tensorflow.keras.losses import Loss\n",
+
+			"class MyLoss(Loss):",
+			"    def __init__(self, $hyperparameters):",
+			"        super().__init__()\n",
+			"        # YOUR CODE HERE\n",
+			"    def call(self, y_true, y_pred):\n",
+			"        # YOUR CODE HERE\n",
+			"        return "
+		],
+		"description": "Loss function using classes"
+	},
+
+	// Customized Layer
+	"Layer class creation": {
+		"scope": "python",
+		"prefix": "classlayer",
+		"body": [
+			"def ${1:MyLayer}(Layer):",
+			"    def __init__(self, units=${2:32}, activation=None):",
+			"        super(${1:MyLayer}, self).__init__()",
+			"        self.units = units",
+			"        self.activation = tf.keras.activations.get(activation)\n",
+			"    # Create the state of the layer (weights)",
+			"    def build(self, input_shape):",
+			"        pass\n",
+			"    # Defines the computation from inputs to outputs",
+			"    def call(self, inputs):\n",
+			"        return",
+		],
+		"description": "Create customized layer",
+	},
+
+	//Customized models
+	"CNN Residual":{
+		"scope": "python",
+		"prefix": "cnnres",
+		"body": [
+			"import tensorflow as tf",
+			"from tensorflow.keras import Layer",
+			"from tensorflow.keras.layers import Conv2D\n",
+			"class CNNResidual(Layer):",
+			"    def __init__(self, layers, filters, **kwargs):",
+			"        super().__init__(**kwargs)",
+			"        self.hidden = [Conv2D(filters, (3, 3), activation='relu') for _ in range(layers)]\n",
+			"    def call(self, inputs):",
+			"        x = inputs\n",
+			"        for layer in self.hidden:",
+			"            x = layer(x)\n",
+			
+			"        return inputs+x",
+		],
+		"description": "Create CNN residual block",
+	},
+	"DNN Residual":{
+		"scope": "python",
+		"prefix": "dnnres",
+		"body": [
+			"import tensorflow as tf",
+			"from tensorflow.keras import Layer",
+			"from tensorflow.keras.layers import Dense\n",
+			"class DNNResidual(Layer):",
+			"    def __init__(self, layers, neurons, **kwargs):",
+			"        super().__init__(**kwargs)",
+			"        self.hidden = [Dense(neurons, activation='relu') for _ in range(layers)]\n",
+			"    def call(self, inputs):",
+			"        x = inputs\n",
+			"        for layer in self.hidden:",
+			"            x = layer(x)\n",
+			
+			"        return inputs+x",
+		],
+		"description": "Create DNN residual block",
+	},
+	"Identity block":{
+		"scope": "python",
+		"prefix": "idblock",
+		"body": [
+			"from tensorflow.keras.layers import Dense, Conv2D, BatchNormalization, Activation, Add",
+			"from tensorflow.keras import Model\n",
+			
+			"class IdentityBlock(Model):",
+			"    def __init__(self, filters, kernel_size, **kwargs):",
+			"        super(IdentityBlock, self).__init__(name='')",
+			"        self.conv1 = Conv2D(filters, kernel_size, padding='same')",
+			"        self.bn1 = BatchNormalization()\n",
+			
+			"        self.conv2 = Conv2D(filters, kernel_size, padding='same')",
+			"        self.bn2 = BatchNormalization()\n",
+			
+			"        self.act = Activation('relu')",
+			"        self.add = Add()\n",
+			
+			"    def call(self, input_tensor):",
+			"        x = self.conv1(input_tensor)",
+			"        x = self.bn1(x)",
+			"        x = self.act(x)\n",
+			
+			"        x = self.conv2(x)",
+			"        x = self.bn2(x)",
+			"        x = self.act(x)\n",
+			
+			"        x = self.add([x, input_tensor])",
+			"        x = self.add(x)\n",
+			
+			"        return x",
+		],
+		"description": "Create an Identity Block",
+	},
+	"ResNet18":{
+		"scope": "python",
+		"prefix": "resnet18",
+		"body": [
+			"from tensorflow.keras import Model",
+			"from tensorflow.keras.layers import Conv2D, BatchNormalization, Activation, MaxPool2D, GlobalAveragePooling2D, Dense\n",
+
+			"class ResNet18(Model):",
+    		"    def __init__(self, num_classes):",
+			"        super(ResNet, self).__init__()",
+			"        self.conv = Conv2D(64, (7, 7), padding='same')",
+			"        self.bn = BatchNormalization()",
+			"        self.act = Activation('relu')",
+			"        self.max_pool = MaxPool2D((3, 3))",
+			"        self.id1a = ${1:IdentityBlock(64, 3)}",
+			"        self.id1b = $1",
+			"        self.global_pool = GlobalAveragePooling2D()",
+			"        self.classifier = Dense(num_classes, activation='softmax')\n",
+
+			"    def call(self, inputs):",
+			"        x = self.conv(inputs)",
+			"        x = self.bn(x)",
+			"        x = self.act(x)",
+			"        x = self.max_pool(x)\n",
+
+			"        x = self.id1a(x)",
+			"        x = self.id1b(x)\n",
+
+			"        x = self.global_pool(x)\n",
+
+			"        return self.classifier(x)",
+		],
+		"description": "Create ResNet18",
+	},
+
+	// Callbacks
+	"Callback":{
+		"scope": "python",
+		"prefix": "tfcallback",
+		"body": [
+			"import datetime",
+			"from tensorflow.keras.callbacks import Callback\n",
+
+			"class ${1:MyCustomCallback}(Callback):",
+    		"    def on_train_batch_begin(self, batch, logs=None):",
+        	"        print('Training: batch {} begins at {}'.format(batch, datetime.datetime.now().time()))\n",
+
+    		"    def on_train_batch_end(self, batch, logs=None):",
+        	"        print('Training: batch {} ends at {}'.format(batch, datetime.datetime.now().time()))"
+		],
+		"description": "Create Customized callback",
+	},
+}
